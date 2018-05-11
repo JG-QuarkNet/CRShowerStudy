@@ -1,29 +1,16 @@
-import argparse
 import parsl
-from parsl import *
 
-workers = ThreadPoolExecutor(max_workers=4)
-dfk = DataFlowKernel(executors=[workers])
-# Log to STDOUT
-#parsl.set_stream_logger()
+workers = parsl.ThreadPoolExecutor(max_workers=4)
+dfk = parsl.DataFlowKernel(executors=[workers])
 
 ## Define Apps ##
 @App('bash', dfk)
 def WireDelay(threshIn='', outputs=[], geoDir='', daqId='', fw=''):
 		return 'perl perl/WireDelay.pl %s %s %s %s %s' %(threshIn,outputs[0],geoDir,daqId,fw)
 
-#@App('bash', dfk)
-#def WireDelay(inputs=[], outputs=[], geoDir='', daqId='', fw=''):
-#		return 'perl perl/WireDelay.pl %s %s %s %s %s' %(inputs[0],outputs[0],geoDir,daqId,fw)
-
 @App('bash', dfk)
 def Combine(inputs=[],outputs=[]):
-		#filenames = [str(i) for i in inputs]
-		print("inside Combine checkpoint 1")
-		#print(' '.join(filenames) )
-		#print('perl perl/Combine.pl ' + ' '.join(inputs) + ' ' + str(outputs[0]))
-		#print("inside Combine checkpoint 2")
-		return 'perl perl/Combine.pl ' + ' '.join(inputs) + ' ' + str(outputs[0])
+                return 'perl perl/Combine.pl ' + ' '.join(inputs) + ' ' + str(outputs[0])
 
 @App('bash', dfk)
 def Sort(inputs=[], outputs=[], key1='1', key2='1'):
@@ -40,7 +27,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--thresholdAll", nargs='+', help="All threshold files")
 parser.add_argument("--wireDelayData", nargs='+', help="Filenames for intermediate Wire Delay data")
 parser.add_argument("--geoDir", help="Directory containing DAQ ID directories that contain .geo files")
-#parser.add_argument("--geoFiles", nargs='+', help=".geo filenames for each CRD")
 parser.add_argument("--detectors", nargs='+', help="IDs of all CRDs in the analysis")
 parser.add_argument("--firmwares", nargs='+', help="DAQ firmware versions")
 parser.add_argument("--combineOut", help="Combined data from all intermediate Wire Delay files")
@@ -68,11 +54,8 @@ for i in range(len(args.thresholdAll)):
 # Each future has an outputs list with one output.
 WireDelay_outputs = [i.outputs[0] for i in WireDelay_futures]
 
-print("pre-combine checkpoint")
-
 # 2) Combine() takes the WireDelay files output by WireDelay() and combines
 #    them into a single file with name given by --combineOut
-#print(WireDelay_outputs, [args.combineOut])
 Combine_future = Combine(inputs=WireDelay_outputs, outputs=[args.combineOut])
 
 # 3) Sort() sorts the --combineOut file, producing a new file with name given
