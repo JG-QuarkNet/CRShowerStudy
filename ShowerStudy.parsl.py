@@ -1,13 +1,26 @@
 import parsl
+from parsl import *
 
-workers = parsl.ThreadPoolExecutor(max_workers=4)
-dfk = parsl.DataFlowKernel(executors=[workers])
+local_config = {
+    "sites" : [
+        { "site" : "Threads",
+          "auth" : { "channel" : None },
+          "execution" : {
+              "executor" : "threads",
+              "provider" : None,
+              "max_workers" : 4
+          }
+        }],
+    "globals" : {"lazyErrors" : True}
+}
+
+dfk = DataFlowKernel(config=local_config)
 
 
 ## Define Apps ##
 @App('bash', dfk)
 def WireDelay(threshIn='', outputs=[], geoDir='', daqId='', fw=''):
-	return 'perl perl/WireDelay.pl %s %s %s %s %s' %(threshIn,outputs[0],geoDir,daqId,fw)
+        return 'perl perl/WireDelay.pl %s %s %s %s %s' %(threshIn,outputs[0],geoDir,daqId,fw)
 
 @App('bash', dfk)
 def Combine(inputs=[],outputs=[]):
@@ -15,19 +28,19 @@ def Combine(inputs=[],outputs=[]):
 
 @App('bash', dfk)
 def Sort(inputs=[], outputs=[], key1='1', key2='1'):
-	return 'perl perl/Sort.pl %s %s %s %s' %(inputs[0], outputs[0], key1, key2)
+        return 'perl perl/Sort.pl %s %s %s %s' %(inputs[0], outputs[0], key1, key2)
 
 @App('bash', dfk)
 def EventSearch(inputs=[], outputs=[], gate='', detCoinc='2', chanCoinc='2', eventCoinc='2'):
-	return 'perl perl/EventSearch.pl %s %s %s %s %s %s' %(inputs[0],outputs[0],gate,detCoinc,chanCoinc,eventCoinc)
+        return 'perl perl/EventSearch.pl %s %s %s %s %s %s' %(inputs[0],outputs[0],gate,detCoinc,chanCoinc,eventCoinc)
 
 
 ## Analysis Parameters ##
 # Define what are typically the command-line arguments
-thresholdAll = ('files/6119.2016.0109.0.thresh', 'files/6148.2016.0109.0.thresh')
-wireDelayData = ('6119.2016.0109.0.wd', '6148.2016.0109.0.wd')
+thresholdAll = ('files/6119.2016.0104.1.thresh', 'files/6203.2016.0104.1.thresh')
+wireDelayData = ('6119.2016.0104.1.wd', '6203.2016.0104.1.wd')
 geoDir = './geo'
-detectors = ('6119', '6148')
+detectors = ('6119', '6203')
 firmwares = ('1.12', '1.12')
 combineOut = 'combinedData'
 sort_sortKey1 = '2'
@@ -45,7 +58,7 @@ eventCandidates = 'eventCandidates'
 #    each to a Wire Delay (.wd) file:
 WireDelay_futures = []
 for i in range(len(thresholdAll)):
-	WireDelay_futures.append(WireDelay(threshIn=thresholdAll[i], outputs=[wireDelayData[i]], geoDir=geoDir, daqId=detectors[i],fw=firmwares[i]))
+        WireDelay_futures.append(WireDelay(threshIn=thresholdAll[i], outputs=[wireDelayData[i]], geoDir=geoDir, daqId=detectors[i],fw=firmwares[i]))
 
 # WireDelay_futures is a list of futures.
 # Each future has an outputs list with one output.
