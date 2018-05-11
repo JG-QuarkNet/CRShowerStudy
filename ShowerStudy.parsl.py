@@ -20,19 +20,19 @@ dfk = DataFlowKernel(config=local_config)
 ## Define Apps ##
 @App('bash', dfk)
 def WireDelay(threshIn='', outputs=[], geoDir='', daqId='', fw=''):
-        return 'perl perl/WireDelay.pl %s %s %s %s %s' %(threshIn,outputs[0],geoDir,daqId,fw)
+        return 'perl ./perl/WireDelay.pl %s %s %s %s %s' %(threshIn,outputs[0],geoDir,daqId,fw)
 
 @App('bash', dfk)
 def Combine(inputs=[],outputs=[]):
-        return 'perl perl/Combine.pl ' + ' '.join(inputs) + ' ' + str(outputs[0])
+        return 'perl ./perl/Combine.pl ' + ' '.join(inputs) + ' ' + str(outputs[0])
 
 @App('bash', dfk)
 def Sort(inputs=[], outputs=[], key1='1', key2='1'):
-        return 'perl perl/Sort.pl %s %s %s %s' %(inputs[0], outputs[0], key1, key2)
+        return 'perl ./perl/Sort.pl %s %s %s %s' %(inputs[0], outputs[0], key1, key2)
 
 @App('bash', dfk)
 def EventSearch(inputs=[], outputs=[], gate='', detCoinc='2', chanCoinc='2', eventCoinc='2'):
-        return 'perl perl/EventSearch.pl %s %s %s %s %s %s' %(inputs[0],outputs[0],gate,detCoinc,chanCoinc,eventCoinc)
+        return 'perl ./perl/EventSearch.pl %s %s %s %s %s %s' %(inputs[0],outputs[0],gate,detCoinc,chanCoinc,eventCoinc)
 
 
 ## Analysis Parameters ##
